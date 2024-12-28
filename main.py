@@ -133,7 +133,7 @@ if st.session_state["model"]:
 
                     # Generate questions using the model
                     llm = OpenAI(model_name = "gpt-3.5-turbo", streaming = False)
-                    response = llm({"prompt": prompt})
+                    response = llm(prompt)
                     questions = response["choices"][0]["text"].strip().split("\n")
 
                     st.subheader("Generated Questions:")
