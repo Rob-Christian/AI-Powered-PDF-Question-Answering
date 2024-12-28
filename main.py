@@ -11,7 +11,7 @@ from langchain.chains import RetrievalQA
 
 # Retrieve OpenAI key
 OPENAI_API_KEY = st.secrets["key"]
-os.getenv["OPENAI_API_KEY"] = OPENAI_API_KEY
+os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
 
 # Function to extract text from PDF
 def pdf_to_text(files):
