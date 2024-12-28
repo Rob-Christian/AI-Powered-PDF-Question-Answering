@@ -4,4 +4,5 @@ import langchain
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from langchain import OpenAI, RetrievalQA
+from langchain import OpenAI
+from langchain.chains import RetrievalQA
