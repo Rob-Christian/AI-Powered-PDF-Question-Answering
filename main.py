@@ -39,7 +39,8 @@ if upload_files:
     st.success(f"{len(upload_files)} document(s) ready for processing")
 
 
-
+sample = pdf_to_text(upload_files)
+st.write(sample)
 
 
 
