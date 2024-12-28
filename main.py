@@ -155,16 +155,18 @@ if st.session_state["model"]:
                     st.session_state["questions"] = questions
                     st.session_state["answers"] = answers
                     st.session_state["reveal_states"] = [False]*len(questions)
-
-                    st.subheader("Generated Questions:")
-                    for i, (question, answer) in enumerate(zip(questions, answers), 1):
-                        st.write(f"{question}")
-                        if st.button(f"Reveal Answer {i}", key = f"reveal_{i}"):
-                            st.session_state["reveal_states"][i] = True
-
-                        if st.session_state["reveal_states"][i]:
-                            st.write(f"Answer: {st.session_state['answers'][i]}")
+           
             except Exception as e:
                 st.error(f"An error occurred when generating questions: {e}")
+
+        if st.session_state["questions"]:
+            st.subheader("Generated Questions:")
+            for i, question in enumerate(st.session_state["questions"]):
+                st.write(f"{question}")
+                if st.button(f"Reveal Answer {i + 1}", key=f"reveal_{i}"):
+                    st.session_state["reveal_states"][i] = True
+                if st.session_state["reveal_states"][i]:
+                    st.write(f"Answer: {st.session_state['answers'][i]}")
+                    
 else:
     st.info("Please upload and process your PDF files first.")
