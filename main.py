@@ -1,52 +1,123 @@
 # Import necessary libraries
 import streamlit as st
 import langchain
-import os
-import PyPDF2
 from langchain.text_splitter import RecursiveCharacterTextSplitter
 from langchain.embeddings.openai import OpenAIEmbeddings
 from langchain.vectorstores import Chroma
-from langchain import OpenAI
-from langchain.chains import RetrievalQA
+from langchain import OpenAI, VectorDBQA
+from langchain.chains import RetrievalQAWithSourcesChain
+import PyPDF2
+import os
 
-# Retrieve OpenAI key
-OPENAI_API_KEY = st.secrets["key"]
-os.environ["OPENAI_API_KEY"] = OPENAI_API_KEY
+# Set API key
+os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
 
-# Function to extract text from PDF
+# Function to extract text and sources from PDFs
 def pdf_to_text(files):
-  text = []
-  for file in files:
-    pdf_reader = PyPDF2.PdfReader(file)
-    for i in range(len(pdf_reader.pages)):
-      page = pdf_reader.pages[i]
-      text.append(page.extract_text())
-      page.clear()
-  return [text]
+    text_list = []
+    source_list = []
+    for file in files:
+        pdf_reader = PyPDF2.PdfReader(file)
+        for i in range(len(pdf_reader.pages)):
+            page = pdf_reader.pages[i]
+            text = page.extract_text()
+            page.clear()
+            text_list.append(text)
+            source_list.append(file.name + "_page_" + str(i))
+    return [text_list, source_list]
 
-# Customize PDF Question Answering
-st.set_page_config(layout = "centered", page_title = "Retrieval-based QA")
-st.header("AI-PoweredPDF Question Answering")
+# Streamlit page configuration
+st.set_page_config(layout='centered', page_title="Retrieval-based Question Answering")
+st.header("PDF Reviewer with Question Answering")
 st.write("---")
 
-# File to upload
-upload_files = st.file_uploader("Upload up to 3 PDF Documents", accept_multiple_files = True, type = ['pdf'])
+# Initialize session state variables
+if "mode" not in st.session_state:
+    st.session_state["mode"] = None  # To track the selected mode (ask/generate)
+if "model" not in st.session_state:
+    st.session_state["model"] = None  # To store the QA model
 
-# Check file upload status
+# File uploader
+upload_files = st.file_uploader(
+    "Upload up to 3 PDF Documents", accept_multiple_files=True, type=['pdf']
+)
+
+# File upload status
 if upload_files:
-  if len(upload_files) > 3:
-    st.warning("You can only upload up to 3 files")
-    upload_files = upload_files[:3]
-  else:
-    st.success(f"{len(upload_files)} document(s) ready for processing")
+    if len(upload_files) > 3:
+        st.warning("You can only upload up to 3 PDF Documents")
+        upload_files = upload_files[:3]
+    else:
+        st.success(f"{len(upload_files)} document(s) ready for processing")
 
+# Process files button
+if st.button("Process Files"):
+    if not upload_files:
+        st.info("Please upload PDF Documents")
+    else:
+        with st.spinner("Processing Files..."):
+            try:
+                # Extract text and sources
+                text_and_source = pdf_to_text(upload_files)
+                text = text_and_source[0]
+                source = text_and_source[1]
 
-sample = pdf_to_text(upload_files)
-st.write(sample)
+                # Extract embeddings
+                embeddings = OpenAIEmbeddings()
 
+                # Vector store with metadata
+                vectordb = Chroma.from_texts(
+                    text, embeddings, metadatas=[{"source": s} for s in source]
+                )
 
+                # Retrieval model
+                llm = OpenAI(
+                    model_name="gpt-3.5-turbo",
+                    streaming=True,
+                )
+                retriever = vectordb.as_retriever(search_kwargs={"k": 2})
+                model = RetrievalQAWithSourcesChain.from_chain_type(
+                    llm=llm, chain_type="stuff", retriever=retriever
+                )
 
+                # Store the model in session state
+                st.session_state["model"] = model
+                st.success("Files processed successfully! You can now ask questions.")
+            except Exception as e:
+                st.error(f"An error occurred during processing: {e}")
 
+# Render options if the model exists
+if st.session_state["model"]:
+    st.header("What do you prefer to do?")
+    col1, col2 = st.columns(2)
 
+    # Buttons for selecting mode
+    with col1:
+        if st.button("Ask a Question"):
+            st.session_state["mode"] = "ask"
+    with col2:
+        if st.button("Generate Questions"):
+            st.session_state["mode"] = "generate"
 
+    # Mode: Ask a Question
+    if st.session_state["mode"] == "ask":
+        st.subheader("Ask a Question")
+        query = st.text_area("Enter your question here", key="query")
 
+        if st.button("Get Answer"):
+            try:
+                with st.spinner("Model is working on it..."):
+                    result = st.session_state["model"](
+                        {"question": query}, return_only_outputs=True
+                    )
+                    st.subheader("Answer:")
+                    st.write(result["answer"])
+            except Exception as e:
+                st.error(f"An error occurred: {e}")
+
+    # Mode: Generate Questions
+    elif st.session_state["mode"] == "generate":
+        st.subheader("Generate Questions")
+        st.write("This feature is under development.")
+else:
+    st.info("Please upload and process your PDF files first.")
