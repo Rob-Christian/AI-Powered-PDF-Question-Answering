@@ -1,5 +1,7 @@
 streamlit
 PyPDF2
-openai
+openai==0.28
+chromadb==0.3.29
+tiktoken
 langchain
-langchain_community
+langchain-community
