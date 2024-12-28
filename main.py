@@ -10,7 +10,7 @@ import PyPDF2
 import os
 
 # Set API key
-os.environ["OPENAI_API_KEY"] = st.secrets["OPENAI_API_KEY"]
+os.environ["OPENAI_API_KEY"] = st.secrets["key"]
 
 # Function to extract text and sources from PDFs
 def pdf_to_text(files):
