@@ -138,7 +138,7 @@ if st.session_state["model"]:
 
                     st.subheader("Generated Questions:")
                     for question in enumerate(questions):
-                        st.write(f"{question}")
+                        st.write(f"{i}. {question}")
             except Exception as e:
                 st.error(f"An error occurred when generating questions: {e}")
 
