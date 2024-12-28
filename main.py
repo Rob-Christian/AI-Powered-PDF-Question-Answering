@@ -154,7 +154,7 @@ if st.session_state["model"]:
 
                     st.session_state["questions"] = questions
                     st.session_state["answers"] = answers
-                    st.session_state["reveal states"] = [False]*len(questions)
+                    st.session_state["reveal_states"] = [False]*len(questions)
 
                     st.subheader("Generated Questions:")
                     for i, (question, answer) in enumerate(zip(questions, answers), 1):
