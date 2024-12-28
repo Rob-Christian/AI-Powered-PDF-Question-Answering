@@ -158,8 +158,8 @@ if st.session_state["model"]:
 
                     st.subheader("Generated Questions:")
                     for i, (question, answer) in enumerate(zip(questions, answers), 1):
-                        st.write(f"{i+1}. {question}")
-                        if st.button(f"Reveal Answer {i+1}", key = f"reveal_{i}"):
+                        st.write(f"{question}")
+                        if st.button(f"Reveal Answer {i}", key = f"reveal_{i}"):
                             st.session_state["reveal_states"][i] = True
 
                         if st.session_state["reveal_states"][i]:
