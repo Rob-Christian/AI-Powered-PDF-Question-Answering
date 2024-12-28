@@ -118,6 +118,26 @@ if st.session_state["model"]:
     # Mode: Generate Questions
     elif st.session_state["mode"] == "generate":
         st.subheader("Generate Questions")
-        st.write("This feature is under development.")
+        num_questions = st.slider("How many questions do you want to generate?", 1, 5, 3)
+
+        if st.button("Generate"):
+            try:
+                with st.spinner("Generating Questions..."):
+                    all_texts = "".join(st.session_state["model"].retriever.vectorstore.texts)
+
+                    # Define prompt
+                    prompt = f"Generate {num_questions} meaningful questions from the following texts: {all_texts}"
+
+                    # Generate questions using the model
+                    llm = OpenAI(model_name = "gpt-3.5-turbo", streaming = False)
+                    response = llm({"prompt": prompt})
+                    questions = response["choices"][0]["text"].strip().split("\n")
+
+                    st.subheader("Generated Questions:")
+                    for i, question in enumerate(questions):
+                        st.write(f"{i}. {question}")
+            except Exception as e:
+                st.error(f"An error occurred when generating questions: {e}")
+
 else:
     st.info("Please upload and process your PDF files first.")
