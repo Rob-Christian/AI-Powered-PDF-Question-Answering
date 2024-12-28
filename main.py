@@ -36,6 +36,16 @@ if "mode" not in st.session_state:
     st.session_state["mode"] = None  # To track the selected mode (ask/generate)
 if "model" not in st.session_state:
     st.session_state["model"] = None  # To store the QA model
+if "texts" not in st.session_state:
+    st.session_state["texts"] = []
+if "sources" not in st.session_state:
+    st.session_state["sources"] = []
+if "questions" not in st.session_state:
+    st.session_state["questions"] = []
+if "answers" not in st.session_state:
+    st.session_state["answers"] = []
+if "reveal_states" not in st.session_state:
+    st.session_state["reveal_states"] = []
 
 # File uploader
 upload_files = st.file_uploader(
@@ -142,11 +152,18 @@ if st.session_state["model"]:
                         answer_prompt = llm(f"Provide a concise answer to the following question: {question}")
                         answers.append(answer_prompt)
 
+                    st.session_state["questions"] = questions
+                    st.session_state["answers"] = answers
+                    st.session_state["reveal states"] = [False]*len(questions)
+
                     st.subheader("Generated Questions:")
                     for i, (question, answer) in enumerate(zip(questions, answers), 1):
                         st.write(f"{question}")
-                        if st.button(f"Reveal Answer {i}", key = f"reveal {i}"):
-                            st.write(f"Answer: {answer}")
+                        if st.button(f"Reveal Answer {i+1}", key = f"reveal {i}"):
+                            st.session_state["reveal_states"][i] = True
+
+                        if st.session_state["reveal_states"][i]:
+                            st.write(f"Answer: {st.session_state['answers'][i]}")
             except Exception as e:
                 st.error(f"An error occurred when generating questions: {e}")
 else:
