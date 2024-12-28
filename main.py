@@ -136,11 +136,18 @@ if st.session_state["model"]:
                     response = llm(prompt)
                     questions = response.strip().split("\n")
 
+                    # Prepare answers from the question
+                    answers = []
+                    for question in questions:
+                        answer_prompt = llm(f"Provide a concise answer to the following question: {question}")
+                        answers.append(answer_prompt)
+
                     st.subheader("Generated Questions:")
-                    for i, question in enumerate(questions):
+                    for i, (question, answer) in enumerate(zip(questions, answers), 1):
                         st.write(f"{question}")
+                        if st.button(f"Reveal Answer {i}", key = f"reveal {i}"):
+                            st.write(f"Answer: {answer}")
             except Exception as e:
                 st.error(f"An error occurred when generating questions: {e}")
-
 else:
     st.info("Please upload and process your PDF files first.")
