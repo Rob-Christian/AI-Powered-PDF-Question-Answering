@@ -18,7 +18,7 @@ def pdf_to_text(files):
   text = []
   for file in files:
     pdf_reader = PyPDF2.PdfReader(file)
-    for i in pdf_reader.pages:
+    for i in range(len(pdf_reader.pages)):
       text.append(pdf_reader.pages[i].extract_text)
   return text
 
