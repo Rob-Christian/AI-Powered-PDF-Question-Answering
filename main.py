@@ -62,6 +62,9 @@ if st.button("Process Files"):
                 text = text_and_source[0]
                 source = text_and_source[1]
 
+                st.session_state["texts"] = text
+                st.session_state["sources"] = source
+
                 # Extract embeddings
                 embeddings = OpenAIEmbeddings()
 
@@ -123,7 +126,7 @@ if st.session_state["model"]:
         if st.button("Generate"):
             try:
                 with st.spinner("Generating Questions..."):
-                    all_texts = "".join(st.session_state["model"].retriever.vectorstore.texts)
+                    all_texts = "".join(st.session_state.get("texts", []))
 
                     # Define prompt
                     prompt = f"Generate {num_questions} meaningful questions from the following texts: {all_texts}"
