@@ -19,8 +19,10 @@ def pdf_to_text(files):
   for file in files:
     pdf_reader = PyPDF2.PdfReader(file)
     for i in range(len(pdf_reader.pages)):
-      text.append(pdf_reader.pages[i].extract_text)
-  return text
+      page = pdf_reader.pages[i]
+      text.append(page.extract_text())
+      page.clear()
+  return [text]
 
 # Customize PDF Question Answering
 st.set_page_config(layout = "centered", page_title = "Retrieval-based QA")
